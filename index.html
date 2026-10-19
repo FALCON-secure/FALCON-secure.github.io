@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FALCON: Secure Agentic Coding through Counterexample-Grounded Feedback</title>
+<meta name="description" content="FALCON separates attack exploration from behavioral verification and connects them through execution traces of the program under test. Paper, code, and a Claude Code plugin.">
+<meta property="og:title" content="FALCON: Secure Agentic Coding through Counterexample-Grounded Feedback">
+<meta property="og:description" content="Attack the code, run the probes, judge the execution traces. Paper, code, and a Claude Code plugin.">
+<meta property="og:image" content="https://tue09.github.io/FALCON.github.io/assets/img/og.jpg">
+<meta property="og:url" content="https://tue09.github.io/FALCON.github.io/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/img/shield-light.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --line: #d1d9e0;
+    --soft: #f6f8fa;
+    --accent: #b4532a;
+    --figure: #ffffff;
+    --code-bg: #f6f8fa;
+    --green: #1a7f37;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #9198a1;
+      --line: #30363d;
+      --soft: #151b23;
+      --accent: #f0883e;
+      --figure: #f6f8fa;
+      --code-bg: #151b23;
+      --green: #3fb950;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #9198a1;
+    --line: #30363d;
+    --soft: #151b23;
+    --accent: #f0883e;
+    --figure: #f6f8fa;
+    --code-bg: #151b23;
+    --green: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  code { font-size: 0.88em; background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 6px; }
+
+  header.top { text-align: center; padding: 56px 0 8px; }
+  .brand { display: inline-flex; align-items: center; gap: 14px; }
+  .brand img { width: 44px; height: 53px; }
+  .brand span { font-size: 40px; font-weight: 700; letter-spacing: 0.06em; }
+  h1 { font-size: 32px; line-height: 1.25; font-weight: 600; margin: 18px auto 0; max-width: 760px; }
+  .authors { margin-top: 22px; font-size: 18px; }
+  .authors span { white-space: nowrap; margin: 0 7px; }
+  .affil { margin-top: 8px; color: var(--muted); font-size: 15px; }
+  .affil span { white-space: nowrap; margin: 0 8px; }
+  .note { margin-top: 4px; color: var(--muted); font-size: 13px; }
+  sup { font-size: 0.65em; }
+  .links { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .links a {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--fg); font-size: 15px; font-weight: 600; background: var(--soft);
+  }
+  .links a:hover { text-decoration: none; border-color: var(--muted); }
+  .links svg, .links img { width: 18px; height: 18px; flex: none; }
+
+  section { margin-top: 56px; }
+  h2 { font-size: 24px; font-weight: 600; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 18px; font-weight: 600; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; }
+
+  .video { margin-top: 36px; }
+  .video video { width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); background: #0e0e0e; }
+  figure { margin: 22px 0; }
+  figure img { width: 100%; display: block; background: var(--figure); border-radius: 8px; border: 1px solid var(--line); padding: 10px; }
+  figure.bare img { padding: 0; }
+  figcaption, .caption { margin-top: 10px; color: var(--muted); font-size: 15px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .narrow { max-width: 640px; margin-left: auto; margin-right: auto; }
+
+  ol.steps { padding-left: 22px; margin: 0 0 14px; }
+  ol.steps li { margin-bottom: 6px; }
+  ol.steps b { font-weight: 600; }
+
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-weight: 600; color: var(--muted); }
+  tr.ours td { font-weight: 600; }
+  .up { color: var(--green); font-weight: 500; font-size: 13px; margin-left: 4px; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px;
+    overflow-x: auto; font-size: 14px; line-height: 1.55; margin: 0 0 14px;
+  }
+  .bib { position: relative; }
+  .bib button {
+    position: absolute; top: 8px; right: 8px; font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
+  }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; text-align: center; }
+  .theme-light-only { display: inline; }
+  .theme-dark-only { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-light-only { display: none; }
+    :root:not([data-theme="light"]) .theme-dark-only { display: inline; }
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    header.top { padding-top: 36px; }
+    .brand span { font-size: 32px; }
+    h1 { font-size: 24px; }
+    .authors { font-size: 16px; }
+    .affil span { white-space: normal; display: inline-block; }
+    .pair { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <div class="brand">
+    <img class="theme-light-only" src="assets/img/shield-light.svg" alt="">
+    <img class="theme-dark-only" src="assets/img/shield-dark.svg" alt="">
+    <span>FALCON</span>
+  </div>
+  <h1>Secure Agentic Coding through<br>Counterexample&#8209;Grounded Feedback</h1>
+  <div class="authors">
+    <span>Tue Le<sup>1</sup></span>
+    <span>Anh Nguyen Hoang<sup>1</sup></span>
+    <span>Gabriel Sasseville<sup>2,3</sup></span>
+    <span>Doseok Jang<sup>2,3</sup></span>
+    <span>Pierre-Luc Bacon<sup>2,3</sup></span>
+    <span>Nghi D. Q. Bui<sup>4,†</sup></span>
+  </div>
+  <div class="affil">
+    <span><sup>1</sup>Quantum AI &amp; Cyber Security Institute (QACI), FPT Corporation</span>
+    <span><sup>2</sup>Mila – Quebec Artificial Intelligence Institute</span>
+    <span><sup>3</sup>Université de Montréal</span>
+    <span><sup>4</sup>Google</span>
+  </div>
+  <div class="note"><sup>†</sup>Work done while at FPT.</div>
+  <nav class="links">
+    <a href="assets/falcon-paper.pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+      Paper
+    </a>
+    <a href="https://github.com/FSoft-AI4Code/FALCON">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      Code
+    </a>
+    <a href="#plugin">
+      <img src="assets/img/claude.svg" alt="">
+      Claude Code plugin
+    </a>
+    <a href="#demo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>
+      Demo
+    </a>
+  </nav>
+</header>
+
+<section class="video" id="demo">
+  <video controls autoplay muted loop playsinline preload="metadata" poster="assets/img/demo-poster.jpg">
+    <source src="assets/demo.mp4" type="video/mp4">
+    <a href="assets/demo.mp4">Download the demo video (MP4)</a>
+  </video>
+  <p class="caption">
+    The attacker-verifier plugin running <code>/secure-code-generation</code> in Claude Code, with waits sped up.
+    Claude writes an endpoint on top of an existing helper. The attacker's probe reads a file outside the
+    reports folder through a symbolic link, the verifier judges that execution trace insecure (CWE-59),
+    Claude fixes the code, and the second turn finds no violation.
+  </p>
+</section>
+
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>
+    As coding models and agent harnesses become more capable, reliable security verification is becoming a
+    central bottleneck. Improving secure code generation requires a signal whose reported progress remains
+    aligned with actual program behavior under optimization; otherwise, an optimizer can improve the signal's
+    verdict without removing the underlying vulnerability. Existing model-based approaches require models to
+    either infer program behavior from source code or specify correct outcomes for adversarial tests, placing
+    substantial reasoning demands on the security signal. We introduce FALCON, a counterexample-grounded
+    verification framework that separates attack exploration from behavioral verification and connects them
+    through execution traces of the program under test. In test-time repair, FALCON yields substantially
+    stronger held-out functional-security gains than alternative security signals across secure code generation
+    benchmarks, while preserving or improving functionality. As an RL reward, FALCON also outperforms
+    static-analysis and learned rewards on held-out functional-security, even when all policies successfully
+    optimize their respective training rewards. Combining FALCON with either proxy reward further improves
+    held-out performance, suggesting that execution-grounded feedback can mitigate reward overoptimization while
+    preserving useful guidance from existing security signals.
+  </p>
+</section>
+
+<section id="method">
+  <h2>How FALCON works</h2>
+  <figure class="narrow">
+    <img src="assets/img/motivation.png" alt="Prior approaches ask a model to judge source code or to write tests with expected outcomes; FALCON separates exploration from verification through execution evidence.">
+    <figcaption>
+      A judge that reads source code has to infer how the program behaves, and a model that writes security
+      tests also has to decide the correct output. FALCON gives each model a narrower job and connects them
+      through execution.
+    </figcaption>
+  </figure>
+  <ol class="steps">
+    <li><b>Targets.</b> The functions, methods, and classes the change touches are selected for attack; test files are excluded.</li>
+    <li><b>Attack.</b> An attacker writes deterministic proof-of-concept probes that call each target with adversarial inputs or a prepared environment. A probe records what happened and never states the expected result.</li>
+    <li><b>Faithfulness.</b> A probe is rejected if it redefines or patches the target, or reports evidence it produced itself, and discarded if its observations cannot be tied to the target at runtime.</li>
+    <li><b>Execution.</b> Each admitted probe runs alone in a sandbox, under a tracer that records the target's calls, return values, exceptions, and side effects.</li>
+    <li><b>Verification.</b> Deterministic checks decide traces with clear runtime evidence; a judge model reads the remaining traces, never the source, and decides whether the observed behavior is a violation.</li>
+    <li><b>Feedback.</b> Code is insecure if any admitted probe shows a violation. Each violation goes back to the coding agent as a counterexample: the probe, its trace, and the reason.</li>
+  </ol>
+  <figure>
+    <img src="assets/img/overview.png" alt="Overview of FALCON: coding agent, attacker, faithfulness check, sandboxed execution, verifier, and feedback.">
+    <figcaption>
+      The attacker generates PoC probes for code produced by the coding agent. The faithfulness check rejects
+      probes that shadow the target or fabricate the apparent violation. Admitted probes run in a sandbox, and the
+      verifier evaluates their traces with a crash oracle, deterministic CWE detectors, and an LLM trace judge for
+      the cases those leave unresolved.
+    </figcaption>
+  </figure>
+</section>
+
+<section id="results">
+  <h2>Results</h2>
+  <p>
+    Func-Sec@1 counts a task only when both the benchmark's functional tests and its security tests pass; those
+    tests are never shown to the attacker, the verifier, or the coding model.
+  </p>
+
+  <h3>Reported progress versus held-out security</h3>
+  <figure>
+    <img src="assets/img/signal-comparison.png" alt="Repair on CWEval with four security signals: held-out Func-Sec@1 per round, the improvement each signal reports, and reported versus held-out improvement.">
+    <figcaption>
+      GPT-5.4-mini repaired its CWEval solutions for five rounds against four security signals. Every signal
+      reported progress on its own verdicts, but only part of it reached the held-out tests: FALCON raised
+      Func-Sec@1 by 25.2 points (61.3 to 86.6), CodeQL by 6.7, an LLM judge by 0.0, and attacker-written tests
+      lowered it by 1.7.
+    </figcaption>
+  </figure>
+
+  <h3>Test-time repair</h3>
+  <div class="pair">
+    <figure style="margin:0"><img src="assets/img/repair-seccodebench.png" alt="Func-Sec@1 on SecCodeBench-V2 before and after repair with FALCON."></figure>
+    <figure style="margin:0"><img src="assets/img/repair-cweval.png" alt="Func-Sec@1 on CWEval before and after repair with FALCON."></figure>
+  </div>
+  <p class="caption">
+    Up to five rounds of repair, with the attacker and the judge on the same model as the coder (starred).
+    Func-Sec@1 rises by 22.5 to 24.0 points on SecCodeBench-V2 and by 24.4 to 25.2 points on CWEval.
+    GPT-5.4-nano goes from 40.6% to 64.3% and from 52.9% to 77.3%, close to or above Claude Opus 4.8 without repair.
+  </p>
+
+  <h3>Coding agents on SusVibes</h3>
+  <p>
+    Three harnesses (SWE-agent, Claude Code, and OpenCode) edit real Python repositories in SusVibes, 186 tasks
+    across 77 CWEs. Before a patch is accepted, FALCON attacks the changed code and returns any violation to the
+    agent, for at most five checks. Values are averaged over the three harnesses.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Model</th><th>FuncPass</th><th>SecPass</th><th>Func-TestRate</th><th>Sec-TestRate</th></tr></thead>
+      <tbody>
+        <tr><td>GPT-5.4-mini</td><td>44.09</td><td>12.36</td><td>74.01</td><td>69.76</td></tr>
+        <tr class="ours"><td>+ FALCON</td><td>46.59<span class="up">+2.50</span></td><td>17.20<span class="up">+4.84</span></td><td>76.24<span class="up">+2.23</span></td><td>72.55<span class="up">+2.79</span></td></tr>
+        <tr><td>GPT-5.4</td><td>68.82</td><td>20.25</td><td>81.65</td><td>77.55</td></tr>
+        <tr class="ours"><td>+ FALCON</td><td>70.97<span class="up">+2.15</span></td><td>25.27<span class="up">+5.02</span></td><td>83.12<span class="up">+1.47</span></td><td>79.35<span class="up">+1.80</span></td></tr>
+        <tr><td>GPT-5.6-luna</td><td>62.54</td><td>19.00</td><td>80.99</td><td>77.78</td></tr>
+        <tr class="ours"><td>+ FALCON</td><td>63.62<span class="up">+1.08</span></td><td>22.22<span class="up">+3.22</span></td><td>81.47<span class="up">+0.48</span></td><td>79.36<span class="up">+1.58</span></td></tr>
+        <tr><td>DeepSeek-V4-Pro (08-13)</td><td>81.90</td><td>20.79</td><td>83.87</td><td>79.92</td></tr>
+        <tr class="ours"><td>+ FALCON</td><td>82.61<span class="up">+0.71</span></td><td>24.91<span class="up">+4.12</span></td><td>84.68<span class="up">+0.81</span></td><td>81.59<span class="up">+1.67</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Reinforcement learning</h3>
+  <figure>
+    <img src="assets/img/rl-training-curves.png" alt="GRPO training reward, held-out Func-Sec@1, and KL for six security rewards on Qwen2.5-Coder-3B and 7B.">
+    <figcaption>
+      GRPO on SecCodePLT+ with Qwen2.5-Coder 3B and 7B, six security rewards, and the same functionality reward.
+      Every policy raises its own training reward, but the static-analysis (REAL) and learned (SecCodePRM) rewards
+      transfer much less to held-out Func-Sec@1, and at 3B it falls while their reward keeps rising. Adding the
+      FALCON reward to either one gives the best held-out results (57.25 at 3B with REAL, 77.26 at 7B with
+      SecCodePRM); combining REAL with SecCodePRM does not help.
+    </figcaption>
+  </figure>
+
+  <h3>Verifier accuracy and cost</h3>
+  <p>
+    Agreement with CWEval's labeled security tests, averaged over code from three models, with GPT-5.2 as the
+    judge. Judging one observed execution is easier than judging all the executions a piece of code allows, and
+    it is cheaper.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Verifier</th><th>Accuracy</th><th>False positives</th><th>False negatives</th><th>Cost per example</th></tr></thead>
+      <tbody>
+        <tr><td>Deterministic checks only</td><td>97.54%</td><td>2.33%</td><td>2.62%</td><td>$0</td></tr>
+        <tr class="ours"><td>Deterministic checks + trace judge</td><td>98.58%</td><td>2.73%</td><td>0.20%</td><td>$0.085</td></tr>
+        <tr><td>Trace judge on every trace</td><td>87.99%</td><td>23.92%</td><td>0.18%</td><td>$0.634</td></tr>
+        <tr><td>Judge reading the source code</td><td>61.16%</td><td>50.43%</td><td>28.05%</td><td>$1.227</td></tr>
+        <tr><td>CodeQL</td><td>56.68%</td><td>17.95%</td><td>66.42%</td><td>$0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="plugin">
+  <h2>Use it in Claude Code</h2>
+  <p>
+    The repository includes FALCON as a Claude Code plugin named attacker-verifier. Install it from the Claude
+    Code prompt:
+  </p>
+  <pre>/plugin marketplace add FSoft-AI4Code/FALCON
+/plugin install attacker-verifier@attacker-verifier</pre>
+  <p>Then audit existing code, or write new code and harden it:</p>
+  <pre>/check-code-security src/storage.py
+/secure-code-generation add an endpoint that serves report files by name</pre>
+  <p>
+    <code>/check-code-security</code> attacks the code you name and writes a report with each violation's probe,
+    trace, and reason. <code>/secure-code-generation</code> implements the request, then runs attack, verify, and
+    repair turns until a turn finds nothing or the turn budget runs out. While a pass runs, a band above the prompt
+    shows the stage in progress and who is doing it: Claude, the attacker, the sandbox, or the verifier. The
+    attacker and the verifier can run in your session or as separate subagents on a model you choose. Only Python
+    is attacked, and a clean result means the probes that ran found nothing, not that the code is proven safe.
+    See the <a href="https://github.com/FSoft-AI4Code/FALCON#readme">README</a> for configuration, the sandbox
+    options, and the code for the paper's experiments.
+  </p>
+</section>
+
+<section id="bibtex">
+  <h2>BibTeX</h2>
+  <div class="bib">
+    <button type="button" id="copy-bib">Copy</button>
+    <pre id="bib-text">@misc{le2026falcon,
+  title  = {Secure Agentic Coding through Counterexample-Grounded Feedback},
+  author = {Le, Tue and Nguyen Hoang, Anh and Sasseville, Gabriel and Jang, Doseok
+            and Bacon, Pierre-Luc and Bui, Nghi D. Q.},
+  year   = {2026},
+  url    = {https://github.com/FSoft-AI4Code/FALCON}
+}</pre>
+  </div>
+</section>
+
+<footer>
+  FALCON · <a href="https://github.com/FSoft-AI4Code/FALCON">github.com/FSoft-AI4Code/FALCON</a>
+</footer>
+
+</main>
+<script>
+  (function () {
+    var button = document.getElementById("copy-bib");
+    var text = document.getElementById("bib-text");
+    if (!button || !text) return;
+    button.addEventListener("click", function () {
+      try {
+        navigator.clipboard.writeText(text.textContent).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        });
+      } catch (err) {
+        button.textContent = "Select and copy";
+      }
+    });
+  })();
+</script>
+</body>
+</html>
