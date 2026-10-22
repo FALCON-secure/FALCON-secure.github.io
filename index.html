@@ -4,12 +4,14 @@
 <meta charset="utf-8">
 <script>
   (function () {
+    var theme = "dark";
     try {
       var asked = new URLSearchParams(window.location.search).get("theme");
-      var theme = asked || window.localStorage.getItem("falcon-theme");
-      if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
-      if (asked === "dark" || asked === "light") window.localStorage.setItem("falcon-theme", asked);
+      var saved = window.localStorage.getItem("falcon-theme");
+      if (asked === "dark" || asked === "light") { theme = asked; window.localStorage.setItem("falcon-theme", asked); }
+      else if (saved === "dark" || saved === "light") theme = saved;
     } catch (err) {}
+    document.documentElement.setAttribute("data-theme", theme);
   })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
