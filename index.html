@@ -2,6 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+  (function () {
+    try {
+      var asked = new URLSearchParams(window.location.search).get("theme");
+      var theme = asked || window.localStorage.getItem("falcon-theme");
+      if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
+      if (asked === "dark" || asked === "light") window.localStorage.setItem("falcon-theme", asked);
+    } catch (err) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FALCON: Secure Agentic Coding through Counterexample-Grounded Feedback</title>
 <meta name="description" content="FALCON separates attack exploration from behavioral verification and connects them through execution traces of the program under test. Paper, code, and a Claude Code plugin.">
@@ -189,6 +199,27 @@
     mask-image: linear-gradient(to bottom, #000 50%, transparent);
   }
 
+  :root[data-theme="dark"] { color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] .theme-light-only { display: none; }
+  :root[data-theme="dark"] .theme-dark-only { display: inline; }
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 10; width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;
+    border: 1px solid var(--line); background: var(--pill); color: var(--fg);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .theme-toggle:hover { transform: translateY(-1px); box-shadow: var(--lift); border-color: var(--muted); }
+  .theme-toggle svg { width: 19px; height: 19px; }
+  .theme-toggle .sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle .sun { display: block; }
+  :root[data-theme="dark"] .theme-toggle .moon { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .sun { display: block; }
+    :root:not([data-theme="light"]) .theme-toggle .moon { display: none; }
+  }
+
   header.top > * { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
   header.top > :nth-child(2) { animation-delay: 0.08s; }
   header.top > :nth-child(3) { animation-delay: 0.16s; }
@@ -231,6 +262,7 @@
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"><div class="wash a"></div><div class="wash b"></div><div class="wash c"></div><canvas></canvas></div>
+<button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
 <main>
 
 <header class="top">
@@ -478,6 +510,19 @@
     sections.forEach(function (section) { section.classList.add("reveal"); seen.observe(section); });
   })();
   (function () {
+    var button = document.querySelector(".theme-toggle");
+    if (!button) return;
+    button.addEventListener("click", function () {
+      var root = document.documentElement;
+      var current = root.getAttribute("data-theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      var next = current === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { window.localStorage.setItem("falcon-theme", next); } catch (err) {}
+      document.dispatchEvent(new Event("themechange"));
+    });
+  })();
+  (function () {
     // Live topographic contours: a slowly changing height field (3D simplex
     // noise, the third axis is time) is traced with marching squares and drawn
     // on a canvas behind the page, so each contour line moves on its own.
@@ -518,7 +563,7 @@
         corner(x0 - 0.5, y0 - 0.5, z0 - 0.5, perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]]));
     }
 
-    var LEVELS = 20, SCALE = 1 / 440, SPEED = 0.000045;
+    var LEVELS = 20, SCALE = 1 / 440, SPEED = 0.000022;
     var w, h, dpr, cell, cols, rows, field, ink;
     function readInk() { ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "rgba(118,96,78,0.17)"; }
     function resize() {
@@ -578,6 +623,7 @@
     }
     readInk(); resize();
     window.addEventListener("resize", function () { resize(); if (still) draw(start); });
+    document.addEventListener("themechange", function () { readInk(); if (still) draw(start); });
     if (window.matchMedia) {
       window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { readInk(); if (still) draw(start); });
     }
