@@ -27,6 +27,7 @@
     --soft: #f4f2ed;
     --pill: rgba(255, 255, 255, 0.72);
     --ink: rgba(118, 96, 78, 0.17);
+    --ink-2: rgba(84, 140, 136, 0.16);
     --wash-a: rgba(236, 196, 172, 0.42);
     --wash-b: rgba(176, 214, 210, 0.38);
     --wash-c: rgba(214, 206, 236, 0.36);
@@ -51,6 +52,7 @@
       --green: #3fb950;
       --pill: rgba(21, 27, 35, 0.72);
       --ink: rgba(196, 210, 225, 0.085);
+      --ink-2: rgba(120, 196, 190, 0.07);
       --wash-a: rgba(150, 92, 64, 0.18);
       --wash-b: rgba(52, 116, 112, 0.18);
       --wash-c: rgba(90, 82, 150, 0.18);
@@ -75,6 +77,7 @@
     --green: #3fb950;
     --pill: rgba(21, 27, 35, 0.72);
     --ink: rgba(196, 210, 225, 0.085);
+    --ink-2: rgba(120, 196, 190, 0.07);
     --wash-a: rgba(150, 92, 64, 0.18);
     --wash-b: rgba(52, 116, 112, 0.18);
     --wash-c: rgba(90, 82, 150, 0.18);
@@ -206,24 +209,38 @@
   html.js section.reveal h2::after { transform: scaleX(0); }
   html.js section.reveal.shown h2::after { transform: scaleX(1); }
 
-  .backdrop {
-    background:
-      radial-gradient(ellipse 40% 45% at 16% 20%, var(--wash-a), transparent 70%),
-      radial-gradient(ellipse 38% 42% at 86% 12%, var(--wash-b), transparent 70%),
-      radial-gradient(ellipse 50% 34% at 55% 64%, var(--wash-c), transparent 70%);
-  }
+  /* The background stays behind the whole page: two layers of contour lines
+     flow in different directions, pale washes drift, and the lines shift a
+     little when the page scrolls. The tiles are seamless, so the flow loops. */
+  .backdrop { position: fixed; inset: 0; height: auto; -webkit-mask-image: none; mask-image: none; }
+  .wash { position: absolute; width: 64vmax; height: 64vmax; border-radius: 50%; will-change: transform; }
+  .wash.a { left: -20vmax; top: -24vmax; background: radial-gradient(closest-side, var(--wash-a), transparent); animation: wash-a 38s ease-in-out infinite alternate; }
+  .wash.b { right: -22vmax; top: -18vmax; background: radial-gradient(closest-side, var(--wash-b), transparent); animation: wash-b 46s ease-in-out infinite alternate; }
+  .wash.c { left: 18vw; bottom: -34vmax; background: radial-gradient(closest-side, var(--wash-c), transparent); animation: wash-c 54s ease-in-out infinite alternate; }
+  @keyframes wash-a { to { transform: translate(14vw, 10vh) scale(1.1); } }
+  @keyframes wash-b { to { transform: translate(-12vw, 16vh) scale(0.92); } }
+  @keyframes wash-c { to { transform: translate(-16vw, -12vh) scale(1.08); } }
   .backdrop .frame {
     position: absolute; inset: 0;
-    -webkit-mask-image: radial-gradient(ellipse 36% 30% at 50% 29%, transparent 0, rgba(0, 0, 0, 0.35) 55%, #000 100%);
-    mask-image: radial-gradient(ellipse 36% 30% at 50% 29%, transparent 0, rgba(0, 0, 0, 0.35) 55%, #000 100%);
+    -webkit-mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, rgba(0, 0, 0, 0.32) 0, rgba(0, 0, 0, 0.5) 55%, #000 100%);
+    mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, rgba(0, 0, 0, 0.32) 0, rgba(0, 0, 0, 0.5) 55%, #000 100%);
   }
-  .backdrop .lines {
-    position: absolute; inset: -90px; background-color: var(--ink);
-    -webkit-mask: url(assets/img/contours.svg) center / cover no-repeat;
-    mask: url(assets/img/contours.svg) center / cover no-repeat;
-    animation: topo 70s ease-in-out infinite alternate;
+  .backdrop .par { position: absolute; inset: 0; transform: translate3d(0, var(--shift, 0px), 0); }
+  .flow { position: absolute; top: 0; left: 0; width: calc(100% + 1600px); height: calc(100% + 2200px); will-change: transform; }
+  .flow.one {
+    background-color: var(--ink);
+    -webkit-mask: url(assets/img/contours.svg) 0 0 / 1600px 1100px repeat;
+    mask: url(assets/img/contours.svg) 0 0 / 1600px 1100px repeat;
+    animation: flow-one 170s linear infinite;
   }
-  @keyframes topo { from { transform: translate(0, 0) scale(1) rotate(0deg); } to { transform: translate(-46px, 26px) scale(1.06) rotate(1.4deg); } }
+  .flow.two {
+    background-color: var(--ink-2);
+    -webkit-mask: url(assets/img/contours-2.svg) 0 0 / 1600px 1100px repeat;
+    mask: url(assets/img/contours-2.svg) 0 0 / 1600px 1100px repeat;
+    animation: flow-two 230s linear infinite;
+  }
+  @keyframes flow-one { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-1600px, -1100px, 0); } }
+  @keyframes flow-two { from { transform: translate3d(-1600px, 0, 0); } to { transform: translate3d(0, -1100px, 0); } }
 
   @media (prefers-reduced-motion: reduce) {
     .backdrop *, header.top > * { animation: none !important; }
@@ -232,7 +249,7 @@
 </style>
 </head>
 <body>
-<div class="backdrop" aria-hidden="true"><div class="frame"><div class="lines"></div></div></div>
+<div class="backdrop" aria-hidden="true"><div class="wash a"></div><div class="wash b"></div><div class="wash c"></div><div class="frame"><div class="par"><div class="flow two"></div><div class="flow one"></div></div></div></div>
 <main>
 
 <header class="top">
@@ -478,6 +495,19 @@
       });
     }, { rootMargin: "0px 0px -8% 0px" });
     sections.forEach(function (section) { section.classList.add("reveal"); seen.observe(section); });
+  })();
+  (function () {
+    var backdrop = document.querySelector(".backdrop");
+    if (!backdrop || !window.matchMedia || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var pending = false;
+    function shift() {
+      pending = false;
+      backdrop.style.setProperty("--shift", (-((window.scrollY * 0.12) % 1100)).toFixed(1) + "px");
+    }
+    window.addEventListener("scroll", function () {
+      if (!pending) { pending = true; window.requestAnimationFrame(shift); }
+    }, { passive: true });
+    shift();
   })();
   (function () {
     var button = document.getElementById("copy-bib");
