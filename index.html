@@ -23,14 +23,20 @@
     --figure: #ffffff;
     --code-bg: #f6f8fa;
     --green: #1a7f37;
-    --dot: rgba(31, 35, 40, 0.10);
-    --glow-a: #f6b48c;
-    --glow-b: #9ad9dc;
-    --glow-c: #cbc3f2;
-    --glow-o: 0.55;
-    --card: rgba(255, 255, 255, 0.86);
-    --lift: 0 18px 50px -22px rgba(31, 35, 40, 0.35);
-    --rule: linear-gradient(90deg, #d9663a, #4fb6bb);
+    --bg: #fbfaf7;
+    --soft: #f4f2ed;
+    --pill: rgba(255, 255, 255, 0.72);
+    --ink: rgba(118, 96, 78, 0.17);
+    --wash-a: rgba(236, 196, 172, 0.42);
+    --wash-b: rgba(176, 214, 210, 0.38);
+    --wash-c: rgba(214, 206, 236, 0.36);
+    --t1: #e4b39a; --t2: #cbc2e8; --t3: #a6d0cc;
+    --thread-o: 0.55;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --grain-o: 0.06;
+    --card: rgba(255, 255, 255, 0.9);
+    --lift: 0 14px 40px -26px rgba(70, 50, 30, 0.32);
+    --rule: linear-gradient(90deg, #d39b7c, #93c2bf);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -43,14 +49,18 @@
       --figure: #f6f8fa;
       --code-bg: #151b23;
       --green: #3fb950;
-      --dot: rgba(230, 237, 243, 0.07);
-      --glow-a: #a2462a;
-      --glow-b: #17676b;
-      --glow-c: #3a3480;
-      --glow-o: 0.42;
+      --pill: rgba(21, 27, 35, 0.72);
+      --ink: rgba(196, 210, 225, 0.085);
+      --wash-a: rgba(150, 92, 64, 0.18);
+      --wash-b: rgba(52, 116, 112, 0.18);
+      --wash-c: rgba(90, 82, 150, 0.18);
+      --t1: #a8735c; --t2: #7a72a8; --t3: #5d9c97;
+      --thread-o: 0.38;
+      --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.88 0 0 0 0 0.92 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      --grain-o: 0.035;
       --card: rgba(21, 27, 35, 0.82);
-      --lift: 0 18px 50px -20px rgba(0, 0, 0, 0.7);
-      --rule: linear-gradient(90deg, #f0883e, #4fc1c6);
+      --lift: 0 16px 44px -22px rgba(0, 0, 0, 0.6);
+      --rule: linear-gradient(90deg, #c98a6a, #6fb3b0);
     }
   }
   :root[data-theme="dark"] {
@@ -62,15 +72,19 @@
     --accent: #f0883e;
     --figure: #f6f8fa;
     --code-bg: #151b23;
-      --green: #3fb950;
-    --dot: rgba(230, 237, 243, 0.07);
-    --glow-a: #a2462a;
-    --glow-b: #17676b;
-    --glow-c: #3a3480;
-    --glow-o: 0.42;
+    --green: #3fb950;
+    --pill: rgba(21, 27, 35, 0.72);
+    --ink: rgba(196, 210, 225, 0.085);
+    --wash-a: rgba(150, 92, 64, 0.18);
+    --wash-b: rgba(52, 116, 112, 0.18);
+    --wash-c: rgba(90, 82, 150, 0.18);
+    --t1: #a8735c; --t2: #7a72a8; --t3: #5d9c97;
+    --thread-o: 0.38;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.88 0 0 0 0 0.92 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --grain-o: 0.035;
     --card: rgba(21, 27, 35, 0.82);
-    --lift: 0 18px 50px -20px rgba(0, 0, 0, 0.7);
-    --rule: linear-gradient(90deg, #f0883e, #4fc1c6);
+    --lift: 0 16px 44px -22px rgba(0, 0, 0, 0.6);
+    --rule: linear-gradient(90deg, #c98a6a, #6fb3b0);
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -82,59 +96,7 @@
     font-size: 17px;
     line-height: 1.6;
   }
-  main { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
-
-  /* Background: a faint dot texture over the whole page, and a slowly drifting
-     glow in the FALCON colors behind the title. */
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background-image: radial-gradient(var(--dot) 1px, transparent 1.3px);
-    background-size: 24px 24px;
-  }
-  .backdrop {
-    position: absolute; top: 0; left: 0; right: 0; height: 1150px; overflow: hidden;
-    pointer-events: none; z-index: 0;
-    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
-    mask-image: linear-gradient(to bottom, #000 55%, transparent);
-  }
-  .backdrop .glow {
-    position: absolute; border-radius: 50%; filter: blur(80px); opacity: var(--glow-o);
-    will-change: transform;
-  }
-  .glow.a { width: 560px; height: 440px; left: calc(50% - 660px); top: 10px; background: var(--glow-a);
-            animation: drift-a 26s ease-in-out infinite alternate; }
-  .glow.b { width: 520px; height: 420px; left: calc(50% + 120px); top: -40px; background: var(--glow-b);
-            animation: drift-b 31s ease-in-out infinite alternate; }
-  .glow.c { width: 620px; height: 380px; left: calc(50% - 300px); top: 360px; background: var(--glow-c);
-            animation: drift-c 36s ease-in-out infinite alternate; }
-  @keyframes drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(90px, 60px) scale(1.12); } }
-  @keyframes drift-b { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-110px, 80px) scale(0.92); } }
-  @keyframes drift-c { from { transform: translate(0, 0) scale(0.95); } to { transform: translate(70px, -70px) scale(1.1); } }
-
-  /* The title block rises in on load; sections fade in as they scroll into view. */
-  header.top > * { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-  header.top > :nth-child(2) { animation-delay: 0.08s; }
-  header.top > :nth-child(3) { animation-delay: 0.16s; }
-  header.top > :nth-child(4) { animation-delay: 0.22s; }
-  header.top > :nth-child(5) { animation-delay: 0.26s; }
-  header.top > :nth-child(6) { animation-delay: 0.32s; }
-  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  .brand img { animation: float 6s ease-in-out 1s infinite alternate; }
-  @keyframes float { from { transform: translateY(0); } to { transform: translateY(-4px); } }
-  html.js section.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
-  html.js section.reveal.shown { opacity: 1; transform: none; }
-  h2 { position: relative; }
-  h2::after {
-    content: ""; position: absolute; left: 0; bottom: -1px; width: 88px; height: 2px; border-radius: 2px;
-    background: var(--rule); transform-origin: left; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s;
-  }
-  html.js section.reveal h2::after { transform: scaleX(0); }
-  html.js section.reveal.shown h2::after { transform: scaleX(1); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .backdrop .glow, header.top > *, .brand img { animation: none !important; }
-    html.js section.reveal, html.js section.reveal h2::after { opacity: 1; transform: none; transition: none; }
-  }
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   code, pre { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
@@ -154,10 +116,11 @@
   .links { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
   .links a {
     display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px;
-    border: 1px solid var(--line); color: var(--fg); font-size: 15px; font-weight: 600; background: var(--soft);
+    border: 1px solid var(--line); color: var(--fg); font-size: 15px; font-weight: 600; background: var(--pill);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
-  .links a { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-  .links a:hover { text-decoration: none; border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--lift); }
+  .links a:hover { text-decoration: none; border-color: var(--muted); transform: translateY(-2px); box-shadow: var(--lift); }
   .links svg, .links img { width: 18px; height: 18px; flex: none; }
 
   section { margin-top: 56px; }
@@ -213,10 +176,63 @@
     .affil span { white-space: normal; display: inline-block; }
     .pair { grid-template-columns: 1fr; }
   }
+
+  main { position: relative; z-index: 1; }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: var(--grain); opacity: var(--grain-o);
+  }
+  .backdrop {
+    position: absolute; top: 0; left: 0; right: 0; height: 1150px; overflow: hidden;
+    pointer-events: none; z-index: 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent);
+    mask-image: linear-gradient(to bottom, #000 50%, transparent);
+  }
+
+  header.top > * { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  header.top > :nth-child(2) { animation-delay: 0.08s; }
+  header.top > :nth-child(3) { animation-delay: 0.16s; }
+  header.top > :nth-child(4) { animation-delay: 0.22s; }
+  header.top > :nth-child(5) { animation-delay: 0.26s; }
+  header.top > :nth-child(6) { animation-delay: 0.32s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  html.js section.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  html.js section.reveal.shown { opacity: 1; transform: none; }
+  h2 { position: relative; }
+  h2::after {
+    content: ""; position: absolute; left: 0; bottom: -1px; width: 88px; height: 2px; border-radius: 2px;
+    background: var(--rule); transform-origin: left; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s;
+  }
+  html.js section.reveal h2::after { transform: scaleX(0); }
+  html.js section.reveal.shown h2::after { transform: scaleX(1); }
+
+  .backdrop {
+    background:
+      radial-gradient(ellipse 40% 45% at 16% 20%, var(--wash-a), transparent 70%),
+      radial-gradient(ellipse 38% 42% at 86% 12%, var(--wash-b), transparent 70%),
+      radial-gradient(ellipse 50% 34% at 55% 64%, var(--wash-c), transparent 70%);
+  }
+  .backdrop .frame {
+    position: absolute; inset: 0;
+    -webkit-mask-image: radial-gradient(ellipse 36% 30% at 50% 29%, transparent 0, rgba(0, 0, 0, 0.35) 55%, #000 100%);
+    mask-image: radial-gradient(ellipse 36% 30% at 50% 29%, transparent 0, rgba(0, 0, 0, 0.35) 55%, #000 100%);
+  }
+  .backdrop .lines {
+    position: absolute; inset: -90px; background-color: var(--ink);
+    -webkit-mask: url(assets/img/contours.svg) center / cover no-repeat;
+    mask: url(assets/img/contours.svg) center / cover no-repeat;
+    animation: topo 70s ease-in-out infinite alternate;
+  }
+  @keyframes topo { from { transform: translate(0, 0) scale(1) rotate(0deg); } to { transform: translate(-46px, 26px) scale(1.06) rotate(1.4deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .backdrop *, header.top > * { animation: none !important; }
+    html.js section.reveal, html.js section.reveal h2::after { opacity: 1; transform: none; transition: none; }
+  }
 </style>
 </head>
 <body>
-<div class="backdrop" aria-hidden="true"><div class="glow a"></div><div class="glow b"></div><div class="glow c"></div></div>
+<div class="backdrop" aria-hidden="true"><div class="frame"><div class="lines"></div></div></div>
 <main>
 
 <header class="top">
