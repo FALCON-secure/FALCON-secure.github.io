@@ -26,8 +26,7 @@
     --bg: #fbfaf7;
     --soft: #f4f2ed;
     --pill: rgba(255, 255, 255, 0.72);
-    --ink: rgba(118, 96, 78, 0.17);
-    --ink-2: rgba(84, 140, 136, 0.16);
+    --ink: rgba(118, 96, 78, 0.2);
     --wash-a: rgba(236, 196, 172, 0.42);
     --wash-b: rgba(176, 214, 210, 0.38);
     --wash-c: rgba(214, 206, 236, 0.36);
@@ -51,8 +50,7 @@
       --code-bg: #151b23;
       --green: #3fb950;
       --pill: rgba(21, 27, 35, 0.72);
-      --ink: rgba(196, 210, 225, 0.085);
-      --ink-2: rgba(120, 196, 190, 0.07);
+      --ink: rgba(196, 210, 225, 0.1);
       --wash-a: rgba(150, 92, 64, 0.18);
       --wash-b: rgba(52, 116, 112, 0.18);
       --wash-c: rgba(90, 82, 150, 0.18);
@@ -76,8 +74,7 @@
     --code-bg: #151b23;
     --green: #3fb950;
     --pill: rgba(21, 27, 35, 0.72);
-    --ink: rgba(196, 210, 225, 0.085);
-    --ink-2: rgba(120, 196, 190, 0.07);
+    --ink: rgba(196, 210, 225, 0.1);
     --wash-a: rgba(150, 92, 64, 0.18);
     --wash-b: rgba(52, 116, 112, 0.18);
     --wash-c: rgba(90, 82, 150, 0.18);
@@ -209,9 +206,9 @@
   html.js section.reveal h2::after { transform: scaleX(0); }
   html.js section.reveal.shown h2::after { transform: scaleX(1); }
 
-  /* The background stays behind the whole page: two layers of contour lines
-     flow in different directions, pale washes drift, and the lines shift a
-     little when the page scrolls. The tiles are seamless, so the flow loops. */
+  /* The background stays behind the whole page: one set of topographic
+     contour lines, redrawn live from a slowly changing height field so each
+     line moves on its own, over pale washes that drift. */
   .backdrop { position: fixed; inset: 0; height: auto; -webkit-mask-image: none; mask-image: none; }
   .wash { position: absolute; width: 64vmax; height: 64vmax; border-radius: 50%; will-change: transform; }
   .wash.a { left: -20vmax; top: -24vmax; background: radial-gradient(closest-side, var(--wash-a), transparent); animation: wash-a 38s ease-in-out infinite alternate; }
@@ -220,27 +217,11 @@
   @keyframes wash-a { to { transform: translate(14vw, 10vh) scale(1.1); } }
   @keyframes wash-b { to { transform: translate(-12vw, 16vh) scale(0.92); } }
   @keyframes wash-c { to { transform: translate(-16vw, -12vh) scale(1.08); } }
-  .backdrop .frame {
-    position: absolute; inset: 0;
+  .backdrop canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
     -webkit-mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, rgba(0, 0, 0, 0.32) 0, rgba(0, 0, 0, 0.5) 55%, #000 100%);
     mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, rgba(0, 0, 0, 0.32) 0, rgba(0, 0, 0, 0.5) 55%, #000 100%);
   }
-  .backdrop .par { position: absolute; inset: 0; transform: translate3d(0, var(--shift, 0px), 0); }
-  .flow { position: absolute; top: 0; left: 0; width: calc(100% + 1600px); height: calc(100% + 2200px); will-change: transform; }
-  .flow.one {
-    background-color: var(--ink);
-    -webkit-mask: url(assets/img/contours.svg) 0 0 / 1600px 1100px repeat;
-    mask: url(assets/img/contours.svg) 0 0 / 1600px 1100px repeat;
-    animation: flow-one 170s linear infinite;
-  }
-  .flow.two {
-    background-color: var(--ink-2);
-    -webkit-mask: url(assets/img/contours-2.svg) 0 0 / 1600px 1100px repeat;
-    mask: url(assets/img/contours-2.svg) 0 0 / 1600px 1100px repeat;
-    animation: flow-two 230s linear infinite;
-  }
-  @keyframes flow-one { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-1600px, -1100px, 0); } }
-  @keyframes flow-two { from { transform: translate3d(-1600px, 0, 0); } to { transform: translate3d(0, -1100px, 0); } }
 
   @media (prefers-reduced-motion: reduce) {
     .backdrop *, header.top > * { animation: none !important; }
@@ -249,7 +230,7 @@
 </style>
 </head>
 <body>
-<div class="backdrop" aria-hidden="true"><div class="wash a"></div><div class="wash b"></div><div class="wash c"></div><div class="frame"><div class="par"><div class="flow two"></div><div class="flow one"></div></div></div></div>
+<div class="backdrop" aria-hidden="true"><div class="wash a"></div><div class="wash b"></div><div class="wash c"></div><canvas></canvas></div>
 <main>
 
 <header class="top">
@@ -497,17 +478,110 @@
     sections.forEach(function (section) { section.classList.add("reveal"); seen.observe(section); });
   })();
   (function () {
-    var backdrop = document.querySelector(".backdrop");
-    if (!backdrop || !window.matchMedia || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var pending = false;
-    function shift() {
-      pending = false;
-      backdrop.style.setProperty("--shift", (-((window.scrollY * 0.12) % 1100)).toFixed(1) + "px");
+    // Live topographic contours: a slowly changing height field (3D simplex
+    // noise, the third axis is time) is traced with marching squares and drawn
+    // on a canvas behind the page, so each contour line moves on its own.
+    var canvas = document.querySelector(".backdrop canvas");
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext("2d");
+
+    var grad = [1,1,0, -1,1,0, 1,-1,0, -1,-1,0, 1,0,1, -1,0,1, 1,0,-1, -1,0,-1, 0,1,1, 0,-1,1, 0,1,-1, 0,-1,-1];
+    var perm = new Uint8Array(512), p = new Uint8Array(256), seed = 7, i, j, tmp;
+    for (i = 0; i < 256; i++) p[i] = i;
+    for (i = 255; i > 0; i--) {
+      seed = (seed * 16807) % 2147483647;
+      j = seed % (i + 1); tmp = p[i]; p[i] = p[j]; p[j] = tmp;
     }
-    window.addEventListener("scroll", function () {
-      if (!pending) { pending = true; window.requestAnimationFrame(shift); }
-    }, { passive: true });
-    shift();
+    for (i = 0; i < 512; i++) perm[i] = p[i & 255];
+    function corner(x, y, z, g) {
+      var t = 0.6 - x * x - y * y - z * z;
+      if (t < 0) return 0;
+      g = (g % 12) * 3; t *= t;
+      return t * t * (grad[g] * x + grad[g + 1] * y + grad[g + 2] * z);
+    }
+    function noise(xin, yin, zin) {
+      var s = (xin + yin + zin) / 3, i = Math.floor(xin + s), j = Math.floor(yin + s), k = Math.floor(zin + s);
+      var t = (i + j + k) / 6, x0 = xin - i + t, y0 = yin - j + t, z0 = zin - k + t, i1, j1, k1, i2, j2, k2;
+      if (x0 >= y0) {
+        if (y0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
+        else if (x0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1; }
+        else { i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1; }
+      } else {
+        if (y0 < z0) { i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1; }
+        else if (x0 < z0) { i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1; }
+        else { i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
+      }
+      var ii = i & 255, jj = j & 255, kk = k & 255;
+      return 32 * (corner(x0, y0, z0, perm[ii + perm[jj + perm[kk]]]) +
+        corner(x0 - i1 + 1 / 6, y0 - j1 + 1 / 6, z0 - k1 + 1 / 6, perm[ii + i1 + perm[jj + j1 + perm[kk + k1]]]) +
+        corner(x0 - i2 + 1 / 3, y0 - j2 + 1 / 3, z0 - k2 + 1 / 3, perm[ii + i2 + perm[jj + j2 + perm[kk + k2]]]) +
+        corner(x0 - 0.5, y0 - 0.5, z0 - 0.5, perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]]));
+    }
+
+    var LEVELS = 20, SCALE = 1 / 440, SPEED = 0.000045;
+    var w, h, dpr, cell, cols, rows, field, ink;
+    function readInk() { ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "rgba(118,96,78,0.17)"; }
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      cell = Math.max(8, Math.round(Math.max(w, h) / 190));
+      cols = Math.ceil(w / cell) + 2; rows = Math.ceil(h / cell) + 2;
+      field = new Float32Array(cols * rows);
+    }
+    function draw(time) {
+      var z = time * SPEED, r, c, k;
+      for (r = 0; r < rows; r++) {
+        for (c = 0; c < cols; c++) {
+          var x = c * cell * SCALE, y = r * cell * SCALE;
+          field[r * cols + c] = noise(x, y, z) + 0.42 * noise(x * 2.1 + 31.7, y * 2.1 + 17.3, z * 1.35);
+        }
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = ink; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      for (k = 0; k < LEVELS; k++) {
+        var v = -1.0 + 2.0 * (k + 0.5) / LEVELS;
+        ctx.lineWidth = k % 5 === 2 ? 1.5 : 0.85;
+        ctx.beginPath();
+        for (r = 0; r < rows - 1; r++) {
+          for (c = 0; c < cols - 1; c++) {
+            var n = r * cols + c, a = field[n], b = field[n + 1], d = field[n + cols], e = field[n + cols + 1];
+            var idx = (a > v ? 8 : 0) | (b > v ? 4 : 0) | (e > v ? 2 : 0) | (d > v ? 1 : 0);
+            if (idx === 0 || idx === 15) continue;
+            var x0 = c * cell, y0 = r * cell;
+            var tx = x0 + cell * (v - a) / (b - a), ty = y0;            // top edge
+            var rx = x0 + cell, ry = y0 + cell * (v - b) / (e - b);     // right edge
+            var bx = x0 + cell * (v - d) / (e - d), by = y0 + cell;     // bottom edge
+            var lx = x0, ly = y0 + cell * (v - a) / (d - a);            // left edge
+            switch (idx) {
+              case 1: case 14: ctx.moveTo(lx, ly); ctx.lineTo(bx, by); break;
+              case 2: case 13: ctx.moveTo(bx, by); ctx.lineTo(rx, ry); break;
+              case 3: case 12: ctx.moveTo(lx, ly); ctx.lineTo(rx, ry); break;
+              case 4: case 11: ctx.moveTo(tx, ty); ctx.lineTo(rx, ry); break;
+              case 6: case 9: ctx.moveTo(tx, ty); ctx.lineTo(bx, by); break;
+              case 7: case 8: ctx.moveTo(lx, ly); ctx.lineTo(tx, ty); break;
+              case 5: ctx.moveTo(lx, ly); ctx.lineTo(tx, ty); ctx.moveTo(bx, by); ctx.lineTo(rx, ry); break;
+              case 10: ctx.moveTo(tx, ty); ctx.lineTo(rx, ry); ctx.moveTo(lx, ly); ctx.lineTo(bx, by); break;
+            }
+          }
+        }
+        ctx.stroke();
+      }
+    }
+
+    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var start = 40000, last = -1;
+    function frame(now) {
+      if (now - last >= 41) { last = now; draw(start + now); }
+      window.requestAnimationFrame(frame);
+    }
+    readInk(); resize();
+    window.addEventListener("resize", function () { resize(); if (still) draw(start); });
+    if (window.matchMedia) {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { readInk(); if (still) draw(start); });
+    }
+    if (still) draw(start); else window.requestAnimationFrame(frame);
   })();
   (function () {
     var button = document.getElementById("copy-bib");
